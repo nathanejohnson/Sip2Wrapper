@@ -90,7 +90,6 @@ class Sip2Wrapper {
         }
         return array();
     }
-
     
     public function getPatronRecallItems() {
         $info = $this->fetchPatronInfo('recall');
@@ -189,12 +188,12 @@ class Sip2Wrapper {
     public function startPatronSession($patronId, $patronPass) {
         if ($this->_inPatronSession) {
             $this->endPatronSession();
-            $this->_inPatronSession = false;
         }
         $this->_sip2->patron = $patronId;
         $this->_sip2->patronpwd = $patronPass;
-        if($this->getPatronIsValid()) {
-            $this->_inPatronSession = true;
+        $this->_inPatronSession = true;
+        if(!$this->getPatronIsValid()) {
+            $this->_inPatronSession = false;
         }
         return $this->_inPatronSession;
     }
