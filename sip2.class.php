@@ -62,35 +62,35 @@ class sip2
 
     /* Public variables for configuration */
     public $hostname;
-    public $port         = 6002; /* default sip2 port for Sirsi */
-    public $library      = ''; 
-    public $language     = '001'; /* 001= english */
+    public $port            = 6002;
+    public $library         = '';
+    public $language        = '001'; /* 001= english */
 
     /* Patron ID */
-    public $patron       = ''; /* AA */
-    public $patronpwd    = ''; /* AD */
+    public $patron          = ''; /* AA */
+    public $patronpwd       = ''; /* AD */
 
     /*terminal password */
-    public $AC           = ''; /*AC */
+    public $AC              = ''; /*AC */
 
     /* Maximum number of resends allowed before get_message gives up */
-    public $maxretry     = 3;
+    public $maxretry        = 3;
 
     /* Terminator s */
-    public $fldTerminator = '|';
-    public $msgTerminator = "\r\n";
+    public $fldTerminator   = '|';
+    public $msgTerminator   = "\r\n";
 
     /* Login Variables */
-    public $UIDalgorithm = 0;   /* 0    = unencrypted, default */
-    public $PWDalgorithm = 0;   /* undefined in documentation */
-    public $scLocation   = '';  /* Location Code */
+    public $UIDalgorithm    = 0;   /* 0    = unencrypted, default */
+    public $PWDalgorithm    = 0;   /* undefined in documentation */
+    public $scLocation      = '';  /* Location Code */
 
     /* Public variables for controlling sequence and crc behavior */
-    public $withCrc     = true;
-    public $withSeq     = true;
+    public $withCrc         = true;
+    public $withSeq         = true;
 
     /* Debug */
-    public $debug        = false;
+    public $debug           = false;
 
     /* Public variables for building messages */
     public $AO = 'WohlersSIP';
@@ -100,7 +100,7 @@ class sip2
     private $socket;
 
     /* Sequence number counter */
-    private $seq   = -1;
+    private $seq = -1;
 
     /* resend counter */
     private $retry = 0;
