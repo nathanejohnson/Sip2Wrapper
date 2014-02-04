@@ -2,7 +2,7 @@
 /**
 * SIP2 Class
 *
-* This class provides a methoid of communicating with an Integrated
+* This class provides a method of communicating with an Integrated
 * Library System using 3M's SIP2 standard. 
 *
 * PHP version 5
@@ -10,7 +10,7 @@
 *
 * @package    
 * @author     John Wohlers <john@wohlershome.net>
-* @licence    http://opensource.org/licenses/gpl-3.0.html
+* @license    http://opensource.org/licenses/gpl-3.0.html
 * @copyright  John Wohlers <john@wohlershome.net>
 * @version    $Id: sip2.class.php 28 2010-10-08 21:06:51Z cap60552 $
 * @link       http://php-sip2.googlecode.com/
@@ -47,8 +47,7 @@
 *    // connect to SIP server 
 *    $result = $mysip->connect();
 *
-*    // selfcheck status mesage goes here...
-*
+*    $statusmsg = $
 *
 *    // Get Charged Items Raw response
 *    $in = $mysip->msgPatronInformation('charged');
@@ -70,17 +69,17 @@ class sip2
     /* Patron ID */
     public $patron       = ''; /* AA */
     public $patronpwd    = ''; /* AD */
-    
+
     /*terminal password */
     public $AC           = ''; /*AC */
-    
+
     /* Maximum number of resends allowed before get_message gives up */
     public $maxretry     = 3;
-    
+
     /* Terminator s */
     public $fldTerminator = '|';
     public $msgTerminator = "\r\n";
-    
+
     /* Login Variables */
     public $UIDalgorithm = 0;   /* 0    = unencrypted, default */
     public $PWDalgorithm = 0;   /* undefined in documentation */
@@ -99,17 +98,17 @@ class sip2
 
     /* Private variable to hold socket connection */
     private $socket;
-    
+
     /* Sequence number counter */
     private $seq   = -1;
 
     /* resend counter */
     private $retry = 0;
-    
+
     /* Workarea for building a message */
     private $msgBuild = '';
     private $noFixed = false;
-    
+
     function msgPatronStatusRequest() 
     {
         /* Server Response: Patron Status Response message. */
@@ -120,9 +119,9 @@ class sip2
         $this->_addVarOption('AA',$this->patron);
         $this->_addVarOption('AC',$this->AC);
         $this->_addVarOption('AD',$this->patronpwd);
-        return $this->_returnMessage();     
+        return $this->_returnMessage();
     }
-    
+
     function msgCheckout($item, $nbDateDue ='', $scRenewal='N', $itmProp ='', $fee='N', $noBlock='N', $cancel='N') 
     {
         /* Checkout an item  (11) - untested */
@@ -145,7 +144,7 @@ class sip2
         $this->_addVarOption('AD',$this->patronpwd, true);
         $this->_addVarOption('BO',$fee, true); /* Y or N */
         $this->_addVarOption('BI',$cancel, true); /* Y or N */
-        
+
         return $this->_returnMessage();
     }
     
@@ -155,7 +154,7 @@ class sip2
         if ($itmLocation == '') {
             /* If no location is specified, assume the defualt location of the SC, behavior suggested by spec*/
             $itmLocation = $this->scLocation;
-        } 
+        }
 
         $this->_newMessage('09');
         $this->_addFixedOption($noBlock, 1);
@@ -167,7 +166,7 @@ class sip2
         $this->_addVarOption('AC',$this->AC);
         $this->_addVarOption('CH',$itmProp, true);
         $this->_addVarOption('BI',$cancel, true); /* Y or N */
-        
+
         return $this->_returnMessage();
     }
 
@@ -181,26 +180,28 @@ class sip2
         $this->_addVarOption('AL',$message);
         $this->_addVarOption('AA',$this->AA);
         $this->_addVarOption('AC',$this->AC);
-        
+
         return $this->_returnMessage();
     }
-    
+
     function msgSCStatus($status = 0, $width = 80, $version = 2) 
     {
         /* selfcheck status message, this should be sent immediatly after login  - untested */
         /* status codes, from the spec:
-            * 0 SC unit is OK
-            * 1 SC printer is out of paper
-            * 2 SC is about to shut down
-            */
+        * 0 SC unit is OK
+        * 1 SC printer is out of paper
+        * 2 SC is about to shut down
+        */
 
         if ($version > 3) {
             $version = 2;
         }
+
         if ($status < 0 || $status > 2) {
             $this->_debugmsg( "SIP2: Invalid status passed to msgSCStatus" );
             return false;
-        }    
+        }
+
         $this->_newMessage('99');
         $this->_addFixedOption($status, 1);
         $this->_addFixedOption($width, 3);
@@ -225,12 +226,10 @@ class sip2
         $this->_addVarOption('CO',$sipPassword);
         $this->_addVarOption('CP',$this->scLocation, true);
         return $this->_returnMessage();
-
     }
 
     function msgPatronInformation($type, $start = '1', $end = '5') 
     {
-
         /* 
         * According to the specification:
         * Only one category of items should be  requested at a time, i.e. it would take 6 of these messages, 
@@ -243,7 +242,7 @@ class sip2
         $summary['fine']     = '   Y  ';
         $summary['recall']   = '    Y ';
         $summary['unavail']  = '     Y';
-        
+
         /* Request patron information */
         $this->_newMessage('63');
         $this->_addFixedOption($this->language, 3);
@@ -261,7 +260,6 @@ class sip2
     function msgEndPatronSession() 
     {
         /*  End Patron Session, should be sent before switching to a new patron. (35) - untested */
-
         $this->_newMessage('35');
         $this->_addFixedOption($this->_datestamp(), 18);
         $this->_addVarOption('AO',$this->AO);
@@ -270,7 +268,7 @@ class sip2
         $this->_addVarOption('AD',$this->patronpwd, true);
         return $this->_returnMessage();
     }
-    
+
     /* Fee paid function should go here */
     function msgFeePaid ($feeType, $pmtType, $pmtAmount, $curType = 'USD', $feeId = '', $transId = '') 
     {
@@ -290,7 +288,7 @@ class sip2
         /* 00   cash */
         /* 01   VISA */
         /* 02   credit card */
-        
+
         if (!is_numeric($feeType) || $feeType > 99 || $feeType < 1) {
             /* not a valid fee type - exit */
             $this->_debugmsg( "SIP2: (msgFeePaid) Invalid fee type: {$feeType}");
@@ -302,7 +300,7 @@ class sip2
             $this->_debugmsg( "SIP2: (msgFeePaid) Invalid payment type: {$pmtType}");
             return false;
         }
-        
+
         $this->_newMessage('37');
         $this->_addFixedOption($this->_datestamp(), 18);
         $this->_addFixedOption(sprintf('%02d', $feeType), 2);
@@ -315,10 +313,10 @@ class sip2
         $this->_addVarOption('AD',$this->patronpwd, true);
         $this->_addVarOption('CG',$feeId, true);
         $this->_addVarOption('BK',$transId, true);
-        
+
         return $this->_returnMessage();
     }
-    
+
     function msgItemInformation($item) 
     {
 
@@ -328,13 +326,11 @@ class sip2
         $this->_addVarOption('AB',$item);
         $this->_addVarOption('AC',$this->AC, true);
         return $this->_returnMessage();
-        
     }
 
     function msgItemStatus ($item, $itmProp = '') 
     {
         /* Item status update function (19) - untested  */
-
         $this->_newMessage('19');
         $this->_addFixedOption($this->_datestamp(), 18);
         $this->_addVarOption('AO',$this->AO);
@@ -343,11 +339,11 @@ class sip2
         $this->_addVarOption('CH',$itmProp);
         return $this->_returnMessage();
     }
-    
+
     function msgPatronEnable () 
     {
         /* Patron Enable function (25) - untested */
-        /*  This message can be used by the SC to re-enable canceled patrons. It should only be used for system testing and validation. */
+        /* This message can be used by the SC to re-enable canceled patrons. It should only be used for system testing and validation. */
         $this->_newMessage('25');
         $this->_addFixedOption($this->_datestamp(), 18);
         $this->_addVarOption('AO',$this->AO);
@@ -355,31 +351,30 @@ class sip2
         $this->_addVarOption('AC',$this->AC, true);
         $this->_addVarOption('AD',$this->patronpwd, true);
         return $this->_returnMessage();
-
     }
-    
+
     function msgHold($mode, $expDate = '', $holdtype = '', $item = '', $title = '', $fee='N', $pkupLocation = '') 
     {
         /* mode validity check */
         /* 
-        * - remove hold
-        * + place hold
-        * * modify hold
-        */
+         * - remove hold
+         * + place hold
+         * * modify hold
+         */
         if (strpos('-+*',$mode) === false) {
             /* not a valid mode - exit */
             $this->_debugmsg( "SIP2: Invalid hold mode: {$mode}");
             return false;
         }
-        
+
         if ($holdtype != '' && ($holdtype < 1 || $holdtype > 9)) {
-            /*
-        * Valid hold types range from 1 - 9 
-        * 1   other
-        * 2   any copy of title
-        * 3   specific copy
-        * 4   any copy at a single branch or location
-        */
+        /*
+         * Valid hold types range from 1 - 9 
+         * 1   other
+         * 2   any copy of title
+         * 3   specific copy
+         * 4   any copy at a single branch or location
+         */
             $this->_debugmsg( "SIP2: Invalid hold type code: {$holdtype}");
             return false;
         }
@@ -400,9 +395,8 @@ class sip2
         $this->_addVarOption('AJ',$title, true);
         $this->_addVarOption('AC',$this->AC, true);
         $this->_addVarOption('BO',$fee, true); /* Y when user has agreed to a fee notice */
-        
-        return $this->_returnMessage();
 
+        return $this->_returnMessage();
     }
 
     function msgRenew($item = '', $title = '', $nbDateDue = '', $itmProp = '', $fee= 'N', $noBlock = 'N', $thirdParty = 'N') 
@@ -427,7 +421,7 @@ class sip2
         $this->_addVarOption('AC',$this->AC, true);
         $this->_addVarOption('CH',$itmProp, true);
         $this->_addVarOption('BO',$fee, true); /* Y or N */
-        
+
         return $this->_returnMessage();
     }
 
@@ -443,7 +437,7 @@ class sip2
 
         return $this->_returnMessage();
     }
-    
+
     function parsePatronStatusResponse($response) 
     {
         $result['fixed'] = 
@@ -470,7 +464,6 @@ class sip2
         
         $result['variable'] = $this->_parsevariabledata($response, 24);
         return $result;
-
     }
 
     function parseCheckinResponse($response) 
@@ -486,7 +479,6 @@ class sip2
         
         $result['variable'] = $this->_parsevariabledata($response, 24);
         return $result;
-
     }
 
     function parseACSStatusResponse($response) 
@@ -496,7 +488,7 @@ class sip2
         'Online'            => substr($response, 2, 1),
         'Checkin'           => substr($response, 3, 1),  /* is Checkin by the SC allowed ?*/
         'Checkout'          => substr($response, 4, 1),  /* is Checkout by the SC allowed ?*/
-        'Renewal'			=> substr($response, 5, 1),  /* renewal allowed? */
+        'Renewal'           => substr($response, 5, 1),  /* renewal allowed? */
         'PatronUpdate'      => substr($response, 6, 1),  /* is patron status updating by the SC allowed ? (status update ok)*/
         'Offline'           => substr($response, 7, 1),
         'Timeout'           => substr($response, 8, 3),
@@ -504,7 +496,7 @@ class sip2
         'TransactionDate'   => substr($response, 14, 18),
         'Protocol'          => substr($response, 32, 4),
         );
-        
+
         $result['variable'] = $this->_parsevariabledata($response, 36);
         return $result;
     }
@@ -521,7 +513,6 @@ class sip2
 
     function parsePatronInfoResponse($response) 
     {
-        
         $result['fixed'] = 
         array( 
         'PatronStatus'      => substr($response, 2, 14),
@@ -542,30 +533,27 @@ class sip2
     function parseEndSessionResponse($response) 
     {
         /*   Response example:  36Y20080228 145537AOWOHLERS|AAX00000000|AY9AZF474   */
-        
         $result['fixed'] = 
         array( 
         'EndSession'        => substr($response, 2, 1),
         'TransactionDate'   => substr($response, 3, 18),
-        );    
+        );
 
 
         $result['variable'] = $this->_parsevariabledata($response, 21);
-        
         return $result;
     }
-    
+
     function parseFeePaidResponse($response) 
     {
         $result['fixed'] = 
-        array( 
+        array(
         'PaymentAccepted'   => substr($response, 2, 1),
         'TransactionDate'   => substr($response, 3, 18),
-        );    
+        );
 
         $result['variable'] = $this->_parsevariabledata($response, 21);
         return $result;
-        
     }
 
     function parseItemInfoResponse($response) 
@@ -576,7 +564,7 @@ class sip2
         'SecurityMarker'    => intval (substr($response, 4, 2)),
         'FeeType'           => intval (substr($response, 6, 2)),
         'TransactionDate'   => substr($response, 8, 18),
-        );    
+        );
 
         $result['variable'] = $this->_parsevariabledata($response, 26);
 
@@ -589,7 +577,7 @@ class sip2
         array( 
         'PropertiesOk'      => substr($response, 2, 1),
         'TransactionDate'   => substr($response, 3, 18),
-        );    
+        );
 
         $result['variable'] = $this->_parsevariabledata($response, 21);
         return $result;
@@ -603,31 +591,26 @@ class sip2
         'PatronStatus'      => substr($response, 2, 14),
         'Language'          => substr($response, 16, 3),
         'TransactionDate'   => substr($response, 19, 18),
-        );    
+        );
 
         $result['variable'] = $this->_parsevariabledata($response, 37);
         return $result;
-        
     }
 
     function parseHoldResponse($response) 
     {
-
         $result['fixed'] = 
         array( 
         'Ok'                => substr($response, 2, 1),
         'available'         => substr($response, 3, 1),
         'TransactionDate'   => substr($response, 4, 18),
         'ExpirationDate'    => substr($response, 22, 18)			
-        );    
-
+        );
 
         $result['variable'] = $this->_parsevariabledata($response, 40);
-
         return $result;
     }
-    
-    
+
     function parseRenewResponse($response) 
     {
         /* Response Example:  300NUU20080228    222232AOWOHLERS|AAX00000241|ABM02400028262|AJFolksongs of Britain and Ireland|AH5/23/2008,23:59|CH|AFOverride required to exceed renewal limit.|AY1AZCDA5 */
@@ -638,14 +621,12 @@ class sip2
         'Magnetic'          => substr($response, 4, 1),
         'Desensitize'       => substr($response, 5, 1),
         'TransactionDate'   => substr($response, 6, 18),
-        );    
-
+        );
 
         $result['variable'] = $this->_parsevariabledata($response, 24);
-
         return $result;
     }
-    
+
     function parseRenewAllResponse($response) 
     {
         $result['fixed'] = 
@@ -654,24 +635,19 @@ class sip2
         'Renewed'           => substr($response, 3, 4),
         'Unrenewed'         => substr($response, 7, 4),
         'TransactionDate'   => substr($response, 11, 18),
-        );    
-
+        );
 
         $result['variable'] = $this->_parsevariabledata($response, 29);
-
         return $result;
     }
 
-
-    
-    
     function get_message ($message) 
     {
         /* sends the current message, and gets the response */
         $result     = '';
         $terminator = '';
         $nr         = '';
-        
+
         $this->_debugmsg('SIP2: Sending SIP2 request...');
         socket_write($this->socket, $message, strlen($message));
 
@@ -708,10 +684,9 @@ class sip2
 
     function connect() 
     {
-
         /* Socket Communications  */
         $this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");  
-        
+
         /* Get the IP address for the target host. */
         $address = gethostbyname($this->hostname);
 
@@ -725,7 +700,7 @@ class sip2
         } else {
             $this->_debugmsg( "SIP2: Socket Created" ); 
         }
-        $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'..."); 
+        $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'...");
 
         /* open a connection to the host */
         $result = socket_connect($this->socket, $address, $this->port);
@@ -736,9 +711,8 @@ class sip2
         }
         /* return the result from the socket connect */
         return $result;
-        
     }
-    
+
     function disconnect () 
     {
         /*  Close the socket */
@@ -769,7 +743,6 @@ class sip2
 
     function _parsevariabledata($response, $start) 
     {
-
         $result = array();
         $result['Raw'] = explode("|", substr($response,$start,-7));
         foreach ($result['Raw'] as $item) {
@@ -802,7 +775,7 @@ class sip2
 
         /* 2008.03.15 - Fixed a bug that allowed the checksum to be larger then 4 digits */
         return substr(sprintf ("%4X", $crc), -4, 4);
-    } /* end crc */
+    }
 
     function _getseqnum() 
     {
@@ -873,6 +846,7 @@ class sip2
 
     function _returnMessage($withSeq = null, $withCrc = null) 
     {
+        /* use object defaults if not passed */
         $withSeq = empty($withSeq) ? $this->withSeq : $withSeq;
         $withCrc = empty($withCrc) ? $this->withCrc : $withCrc;
 
@@ -888,7 +862,6 @@ class sip2
 
         return $this->msgBuild;
     }
-
 }
 
 ?>
