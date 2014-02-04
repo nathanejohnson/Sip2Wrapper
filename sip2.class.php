@@ -78,7 +78,7 @@ class sip2
 
     /* Terminator s */
     public $fldTerminator   = '|';
-    public $msgTerminator   = "\r\n";
+    public $msgTerminator   = "\r";
 
     /* Login Variables */
     public $UIDalgorithm    = 0;   /* 0    = unencrypted, default */
@@ -744,7 +744,13 @@ class sip2
     function _parsevariabledata($response, $start) 
     {
         $result = array();
-        $result['Raw'] = explode("|", substr($response,$start,-7));
+        $response = trim($response);
+        if ($this->withCrc) {
+            $result['Raw'] = explode("|", substr($response,$start,-6));
+        }
+        else {
+            $result['Raw'] = explode("|", substr($response, $start));
+        }
         foreach ($result['Raw'] as $item) {
             $field = substr($item,0,2);
             $value = substr($item,2);
@@ -756,8 +762,12 @@ class sip2
                 $result[$field][] = $clean;
             }
         }
-        $result['AZ'][] = substr($response,-5);
-
+        if ($this->withCrc) {
+            $result['AZ'][] = substr($response,-4);
+        }
+        else {
+            $result['AZ'] = array();
+        }
         return ($result);
     }
 
@@ -864,4 +874,3 @@ class sip2
     }
 }
 
-?>
