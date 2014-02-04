@@ -39,6 +39,16 @@ class Sip2Wrapper {
         }
         return 0.00;
     }
+
+    public function getPatronScreenMessages() {
+        $status = $this->getPatronStatus();
+        if (isset($status['variable']['AF']) && is_array($status['variable']['AF'])) {
+            return $status['variable']['AF'];
+        }
+        else {
+            return array();
+        }
+    }
     
     public function getPatronHoldItems() {
         $info = $this->fetchPatronInfo('hold');
