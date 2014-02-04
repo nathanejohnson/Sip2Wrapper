@@ -130,7 +130,7 @@ class Sip2Wrapper {
                     $key = 'scLocation';
                     break;
             }
-            if ($property_exists($sip2, $key)) {
+            if (property_exists($sip2, $key)) {
                 $sip2->$key = $val;
             }
         }
