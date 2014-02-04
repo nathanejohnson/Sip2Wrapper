@@ -29,7 +29,16 @@ class Sip2Wrapper {
         if ($this->_patronStatus === NULL) {
             $this->fetchPatronStatus();
         }
+
         return $this->_patronStatus;
+    }
+
+    public function getPatronIsValid() {
+        $patronStatus = $this->getPatronStatus();
+        if (strcmp($patronStatus['variable']['BL'][0], 'Y') !== 0 || strcmp($patronStatus['variable']['CQ'][0], 'Y') !== 0) {
+            return false;
+        }
+        return true;
     }
     
     public function getPatronFinesTotal() {
@@ -180,15 +189,14 @@ class Sip2Wrapper {
     public function startPatronSession($patronId, $patronPass) {
         if ($this->_inPatronSession) {
             $this->endPatronSession();
+            $this->_inPatronSession = false;
         }
         $this->_sip2->patron = $patronId;
         $this->_sip2->patronpwd = $patronPass;
-        $this->_inPatronSession = true;
-        if (!$this->getPatronStatus()) {
-            $this->_inPatronSession = false;
-            return false;
+        if($this->getPatronIsValid()) {
+            $this->_inPatronSession = true;
         }
-        return true;
+        return $this->_inPatronSession;
     }
 
     public function fetchPatronStatus() {
@@ -196,9 +204,6 @@ class Sip2Wrapper {
         $patron = $this->_sip2->parsePatronStatusResponse($this->_sip2->get_message($msg));
         $this->_patronStatus = $patron;
         /* check for valid credentials */
-        if (strcmp($patron['variable']['BL'][0], 'Y') !== 0 || strcmp($patron['variable']['CQ'][0], 'Y') !== 0) {
-            return false;
-        }
         return true;
     }
 
