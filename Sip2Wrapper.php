@@ -220,7 +220,7 @@ class Sip2Wrapper {
             return $this->_patronInfo[$type];
         }
         $msg = $this->_sip2->msgPatronInformation($type);
-        $info_response = $this->_sip2->parsePatronInfoResponse($this->sip2->get_message($msg));
+        $info_response = $this->_sip2->parsePatronInfoResponse($this->_sip2->get_message($msg));
         if ($this->_patronInfo === NULL) {
             $this->_patronInfo = array();
         }
@@ -332,12 +332,10 @@ class Sip2Wrapper {
         }
         $this->_sip2->patron = $patronId;
         $this->_sip2->patronpwd = $patronPass;
+
         // set to true before call to getPatronIsValid since it will throw an exception otherwise
         $this->_inPatronSession = true;
-        if(!$this->getPatronIsValid()) {
-            // set to false since it failed
-            $this->_inPatronSession = false;
-        }
+        $this->_inPatronSession = $this->getPatronIsValid();
         return $this->_inPatronSession;
     }
 
