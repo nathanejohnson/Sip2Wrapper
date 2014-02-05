@@ -76,7 +76,7 @@ class Sip2Wrapper {
     /**
      *
      * @throws Exception if patron session hasn't began
-     * @return array
+     * @return array the patron status
      */
     public function getPatronStatus() {
         if (!$this->_inPatronSession) {
@@ -286,7 +286,7 @@ class Sip2Wrapper {
      * @param string $autoSelfCheck Whether to call SCStatus after login.  Defaults to true
      * you probably want this.
      * @throws Exception if login failed
-     * @return boolean returns true if login succeeded.
+     * @return Sip2Wrapper - returns $this if login successful
      */
     public function login($bindUser, $bindPass, $autoSelfCheck=true) {
         $msg = $this->_sip2->msgLogin($bindUser, $bindPass);
@@ -298,12 +298,12 @@ class Sip2Wrapper {
         if ($autoSelfCheck) {
             $this->selfCheck();
         }
-        return true;
+        return $this;
     }
     /**
      * Checks the ACS Status to ensure that the ACS is online
      * @throws Exception if ACS is not online
-     * @return boolean returns true if online
+     * @return Sip2Wrapper returns $this if successful
      */
     public function selfCheck() {
 
@@ -316,7 +316,7 @@ class Sip2Wrapper {
             throw new Exception('ACS Offline');
         }
 
-        return true;
+        return $this;
     }
 
     /**
@@ -343,19 +343,19 @@ class Sip2Wrapper {
 
     /**
      * method to grab the patron status from the server and store it in _patronStatus
-     * @return boolean always returns true
+     * @return Sip2Wrapper returns $this
      */
     public function fetchPatronStatus() {
         $msg = $this->_sip2->msgPatronStatusRequest();
         $patron = $this->_sip2->parsePatronStatusResponse($this->_sip2->get_message($msg));
         $this->_patronStatus = $patron;
-        /* check for valid credentials */
-        return true;
+        return $this;
     }
 
     /**
      * method to send a patron session to the server
      * @throws Exception if patron session is not properly ended
+     * @return Sip2Wrapper returns $this
      */
     public function endPatronSession() {
         $msg = $this->_sip2->msgEndPatronSession();
@@ -366,10 +366,12 @@ class Sip2Wrapper {
         $this->_inPatronSession = false;
         $this->_patronStatus = NULL;
         $this->_patronInfo = NULL;
+        return $this;
     }
 
     /**
      * disconnect from the server
+     * @return Sip2Wrapper returns $this
      */
     public function disconnect() {
 
@@ -378,5 +380,6 @@ class Sip2Wrapper {
         $this->_inPatronSession = false;
         $this->_patronInfo = NULL;
         $this->_acsStatus = NULL;
+        return $this;
     }
 }
