@@ -1,5 +1,7 @@
 
-  This is a wrapper class for the sip2.class.php from google code
+  This is a wrapper class for the sip2.class.php from google code.  So far only wrapping the calls
+  authenticate a patron and extract various bits of patron information from the patron status
+  and patron information calls.
  
   usage:
  
@@ -39,3 +41,6 @@ For instance, this works even though there is no property named patronStatus:
     $patronStatus = $sip2->patronStatus;
     
 Behind the scenes it calls the getPatronStatus() method and returns the value.
+
+To Do:
+Finish implementing the methods relating to checking out books etc.
