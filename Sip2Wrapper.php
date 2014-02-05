@@ -5,7 +5,7 @@ require_once 'sip2.class.php';
 
 /**
  *
- * @author njohnson@ena.com
+ * @author nathan@nathanjohnson.info
  */
 
 /**
