@@ -1,5 +1,5 @@
 
-  This is a wrapper class for the sip2.class.php from google code.  So far only wrapping the calls
+  This is a wrapper class for the sip2.class.php from [google code](https://code.google.com/p/php-sip2/).  So far only wrapping the calls
   authenticate a patron and extract various bits of patron information from the patron status
   and patron information calls.
  
