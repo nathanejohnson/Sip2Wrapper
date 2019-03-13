@@ -987,12 +987,12 @@ class sip2
         $nr         = '';
 
         $this->_debugmsg('SIP2: Sending SIP2 request...');
-        socket_write($this->socket, $message, strlen($message));
+        fwrite($this->socket, $message, strlen($message));
 
         $this->_debugmsg('SIP2: Request Sent, Reading response');
 
         while ($terminator != "\x0D" && $nr !== FALSE) {
-            $nr = socket_recv($this->socket,$terminator,1,0);
+            $terminator = fread($this->socket, 1);
             $result = $result . $terminator;
         }
 
@@ -1027,33 +1027,23 @@ class sip2
      */
     function connect() 
     {
+
         /* Socket Communications  */
         $this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");  
-
+        
         /* Get the IP address for the target host. */
         $address = gethostbyname($this->hostname);
 
-        /* Create a TCP/IP socket. */
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'..."); 
 
-        /* check for actual truly false result using ===*/
-        if ($this->socket === false) {
-            $this->_debugmsg( "SIP2: socket_create() failed: reason: " . socket_strerror($this->socket));
-            return false;
-        } else {
-            $this->_debugmsg( "SIP2: Socket Created" ); 
+        $this->socket = stream_socket_client("tcp://$address:$this->port", $errno, $errstr, 30);
+        if(!$this->socket) {
+            $this->_debugmsg( "SIP2: stream_socket_client() failed: reason: $errstr");
         }
-        $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'...");
 
-        /* open a connection to the host */
-        $result = socket_connect($this->socket, $address, $this->port);
-        if (!$result) {
-            $this->_debugmsg("SIP2: socket_connect() failed.\nReason: ($result) " . socket_strerror($result));
-        } else {
-            $this->_debugmsg( "SIP2: --- SOCKET READY ---" );
-        }
-        /* return the result from the socket connect */
-        return $result;
+        return true;
+
+        
     }
 
     /**
@@ -1063,7 +1053,7 @@ class sip2
     function disconnect () 
     {
         /*  Close the socket */
-        socket_close($this->socket);
+        fclose($this->socket);
     }
 
 
