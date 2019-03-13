@@ -1025,25 +1025,69 @@ class sip2
      * @return bool The socket connection status
      * @api
      */
-    function connect() 
-    {
+    function connect($enable_ssl = false,
+        $publicpem = "public.pem",
+        $privatepem = "private.pem") {
 
-        /* Socket Communications  */
-        $this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");  
-        
-        /* Get the IP address for the target host. */
-        $address = gethostbyname($this->hostname);
+        if($enable_ssl) {
 
-        $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'..."); 
+            $this->_debugmsg( "SIP2: --- BEGIN SIP communication (SSL) ---");
 
-        $this->socket = stream_socket_client("tcp://$address:$this->port", $errno, $errstr, 30);
-        if(!$this->socket) {
-            $this->_debugmsg( "SIP2: stream_socket_client() failed: reason: $errstr");
+            $address = gethostbyname($this->hostname);
+
+            $this->socket = true; // for now...
+
+            if ($this->socket === false) {
+                return false;
+            } else {
+                $this->_debugmsg( "SIP2: Socket Created" ); 
+            }
+            $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'..."); 
+
+            $context = stream_context_create();
+
+            if(!file_exists($privatepem_location)) {
+                $this->_debugmsg("Could not locate $privatepem");
+                return false;
+            }
+
+            if(!file_exists($publicpem)) {
+                $this->_debugmsg("Could not locate $rhcl_publicpem_location");
+                return false;
+            }
+
+            stream_context_set_option($context, 'ssl', 'local_cert', $publicpem);
+            stream_context_set_option($context, 'ssl', 'local_pk', $privatepem);
+            stream_context_set_option($context, 'ssl', 'capath', '/etc/ssl/certs');
+            stream_context_set_option($context, 'ssl', 'allow_self_signed', true);
+            stream_context_set_option($context, 'ssl', 'verify_peer', false);
+            stream_context_set_option($context, 'ssl', 'verify_peer_name', false);
+
+            $this->socket = stream_socket_client("tls://$address:$this->port", $errno, $errstr, 30, STREAM_CLIENT_CONNECT, $context);
+            if(!$this->socket) {
+                $this->_debugmsg("Failed to connect to tls://$address:$this->port.  Error {$errno}: {$errstr}");
+                return false;
+            }
+            return true;
+
+        } else {
+
+            /* Socket Communications  */
+            $this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");  
+            
+            /* Get the IP address for the target host. */
+            $address = gethostbyname($this->hostname);
+
+            $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'..."); 
+
+            $this->socket = stream_socket_client("tcp://$address:$this->port", $errno, $errstr, 30);
+            if(!$this->socket) {
+                $this->_debugmsg( "SIP2: stream_socket_client() failed: reason: $errstr");
+            }
+
+            return true;
+
         }
-
-        return true;
-
-        
     }
 
     /**
