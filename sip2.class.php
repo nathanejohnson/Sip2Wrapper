@@ -987,12 +987,12 @@ class sip2
         $nr         = '';
 
         $this->_debugmsg('SIP2: Sending SIP2 request...');
-        socket_write($this->socket, $message, strlen($message));
+        fwrite($this->socket, $message, strlen($message));
 
         $this->_debugmsg('SIP2: Request Sent, Reading response');
 
         while ($terminator != "\x0D" && $nr !== FALSE) {
-            $nr = socket_recv($this->socket,$terminator,1,0);
+            $terminator = fread($this->socket, 1);
             $result = $result . $terminator;
         }
 
@@ -1025,35 +1025,69 @@ class sip2
      * @return bool The socket connection status
      * @api
      */
-    function connect() 
-    {
-        /* Socket Communications  */
-        $this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");  
+    function connect($enable_ssl = false,
+        $publicpem = "public.pem",
+        $privatepem = "private.pem") {
 
-        /* Get the IP address for the target host. */
-        $address = gethostbyname($this->hostname);
+        if($enable_ssl) {
 
-        /* Create a TCP/IP socket. */
-        $this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+            $this->_debugmsg( "SIP2: --- BEGIN SIP communication (SSL) ---");
 
-        /* check for actual truly false result using ===*/
-        if ($this->socket === false) {
-            $this->_debugmsg( "SIP2: socket_create() failed: reason: " . socket_strerror($this->socket));
-            return false;
+            $address = gethostbyname($this->hostname);
+
+            $this->socket = true; // for now...
+
+            if ($this->socket === false) {
+                return false;
+            } else {
+                $this->_debugmsg( "SIP2: Socket Created" ); 
+            }
+            $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'..."); 
+
+            $context = stream_context_create();
+
+            if(!file_exists($privatepem_location)) {
+                $this->_debugmsg("Could not locate $privatepem");
+                return false;
+            }
+
+            if(!file_exists($publicpem)) {
+                $this->_debugmsg("Could not locate $rhcl_publicpem_location");
+                return false;
+            }
+
+            stream_context_set_option($context, 'ssl', 'local_cert', $publicpem);
+            stream_context_set_option($context, 'ssl', 'local_pk', $privatepem);
+            stream_context_set_option($context, 'ssl', 'capath', '/etc/ssl/certs');
+            stream_context_set_option($context, 'ssl', 'allow_self_signed', true);
+            stream_context_set_option($context, 'ssl', 'verify_peer', false);
+            stream_context_set_option($context, 'ssl', 'verify_peer_name', false);
+
+            $this->socket = stream_socket_client("tls://$address:$this->port", $errno, $errstr, 30, STREAM_CLIENT_CONNECT, $context);
+            if(!$this->socket) {
+                $this->_debugmsg("Failed to connect to tls://$address:$this->port.  Error {$errno}: {$errstr}");
+                return false;
+            }
+            return true;
+
         } else {
-            $this->_debugmsg( "SIP2: Socket Created" ); 
-        }
-        $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'...");
 
-        /* open a connection to the host */
-        $result = socket_connect($this->socket, $address, $this->port);
-        if (!$result) {
-            $this->_debugmsg("SIP2: socket_connect() failed.\nReason: ($result) " . socket_strerror($result));
-        } else {
-            $this->_debugmsg( "SIP2: --- SOCKET READY ---" );
+            /* Socket Communications  */
+            $this->_debugmsg( "SIP2: --- BEGIN SIP communication ---");  
+            
+            /* Get the IP address for the target host. */
+            $address = gethostbyname($this->hostname);
+
+            $this->_debugmsg( "SIP2: Attempting to connect to '$address' on port '{$this->port}'..."); 
+
+            $this->socket = stream_socket_client("tcp://$address:$this->port", $errno, $errstr, 30);
+            if(!$this->socket) {
+                $this->_debugmsg( "SIP2: stream_socket_client() failed: reason: $errstr");
+            }
+
+            return true;
+
         }
-        /* return the result from the socket connect */
-        return $result;
     }
 
     /**
@@ -1063,7 +1097,7 @@ class sip2
     function disconnect () 
     {
         /*  Close the socket */
-        socket_close($this->socket);
+        fclose($this->socket);
     }
 
 
